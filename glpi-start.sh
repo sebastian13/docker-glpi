@@ -12,6 +12,11 @@ fi
 
 #Enable session.cookie_httponly
 sed -i 's,session.cookie_httponly = *\(on\|off\|true\|false\|0\|1\)\?,session.cookie_httponly = on,gi' /etc/php/8.3/apache2/php.ini
+# Set Upload File Size Limit
+sed -i 's,upload_max_filesize = .*,upload_max_filesize = 10M,gi' /etc/php/8.3/apache2/php.ini
+# Set Memory Limits
+sed -i 's,memory_limit = .*,memory_limit = 512M,gi' /etc/php/8.3/apache2/php.ini
+sed -i 's,\(;\)\+opcache.memory_consumption=.*,opcache.memory_consumption=256,gi' /etc/php/8.3/apache2/php.ini
 
 FOLDER_GLPI=glpi/
 FOLDER_WEB=/var/www/html/
@@ -23,8 +28,8 @@ then
     echo -e "TLS_REQCERT\tnever" >> /etc/ldap/ldap.conf
 fi
 
-#Téléchargement et extraction des sources de GLPI
-if [ "$(ls ${FOLDER_WEB}${FOLDER_GLPI})" ];
+# Download & extract GLPI release
+if [ -f ${FOLDER_WEB}${FOLDER_GLPI}index.php ];
 then
 	echo "GLPI is already installed"
 else
@@ -56,6 +61,13 @@ if [[ $LOCAL_GLPI_VERSION_NUM -lt $TARGET_GLPI_VERSION_NUM || $LOCAL_GLPI_MAJOR_
 else
   set +H
   echo -e "<VirtualHost *:80>\n\tDocumentRoot /var/www/html/glpi/public\n\n\t<Directory /var/www/html/glpi/public>\n\t\tRequire all granted\n\t\tRewriteEngine On\n\t\tRewriteCond %{REQUEST_FILENAME} !-f\n\t\n\t\tRewriteRule ^(.*)$ index.php [QSA,L]\n\t</Directory>\n\n\tErrorLog /var/log/apache2/error-glpi.log\n\tLogLevel warn\n\tCustomLog /var/log/apache2/access-glpi.log combined\n</VirtualHost>" > /etc/apache2/sites-available/000-default.conf
+fi
+
+## Remove installer
+# used to remove the installer after first installation
+if [ "x${GLPI_REMOVE_INSTALLER}" = 'xyes' ]; then
+  echo 'Removing installer if needed...'
+  rm -f "${FOLDER_WEB}${FOLDER_GLPI}install/install.php"
 fi
 
 #Add scheduled task by cron and enable

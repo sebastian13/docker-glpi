@@ -14,15 +14,19 @@ services:
 
 #GLPI Container
   glpi:
-    image: diouxx/glpi
+    image: plocek/glpi
+    build:
+      context: .
     container_name : glpi
     hostname: glpi
     ports:
       - "80:80"
     volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-      - /var/www/html/glpi/:/var/www/html/glpi
+      - ./glpi-data/config:/var/www/html/glpi/config
+      - ./glpi-data/files:/var/www/html/glpi/files
+      - ./glpi-data/marketplace:/var/www/html/glpi/marketplace
+      - ./glpi-data/plugins:/var/www/html/glpi/plugins
     environment:
       - TIMEZONE=Europe/Brussels
+      - GLPI_REMOVE_INSTALLER=yes
     restart: always
