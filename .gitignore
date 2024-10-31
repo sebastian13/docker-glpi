@@ -2,3 +2,8 @@ docker-compose-test.yml
 cust-entry.sh
 data
 start-docker.sh
+
+dbdata
+dbdumps
+.env
+glpi-data
